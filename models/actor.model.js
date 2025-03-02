@@ -6,9 +6,8 @@ const actorschema = new mongoose.Schema({
   birthdate: "date",
   nationality: "string",
   image: "string", // URL to the actor's image
-  movies: ["ObjectId"], // References to Movie collection
-  createdAt: "date",
-  updatedAt: "date",
+  movies: [{type:mongoose.Schema.Types.ObjectId , ref:"movie"}], // References to Movie collection
+  timestamps: true,
 });
 
 module.exports = mongoose.model("Actor", actorschema);

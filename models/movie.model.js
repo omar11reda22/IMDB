@@ -4,17 +4,16 @@ const movieschema = new mongoose.Schema({
   title: "string",
   year: "number",
   rating: "number",
-  genres: ["string"],
-  director: "ObjectId", // Reference to Director collection
-  actors: ["ObjectId"], // References to Actor collection
-  poster: "string", // URL to the movie poster
+  genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "genre" }],
+  director: [{ type: mongoose.Schema.Types.ObjectId, ref: "director" }],
+  actors: [{ type: mongoose.Schema.Types.ObjectId, ref: "actor" }],
+  poster: "string",
   description: "string",
-  duration: "number", // In minutes
+  duration: "number",
   releaseDate: "date",
   trailerUrl: "string",
-  reviews: ["ObjectId"], // References to Reviews collection
-  createdAt: "date",
-  updatedAt: "date",
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "review" }],
+  timestamps: true,
 });
 
 
