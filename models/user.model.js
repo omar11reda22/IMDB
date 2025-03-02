@@ -7,10 +7,9 @@ const userschema = new mongoose.Schema({
   password: "string", // Should be hashed
   avatar: "string",
   role: "string", // User, Admin, Moderator
-  watchlist: ["ObjectId"], // References to Movie collection
-  reviews: ["ObjectId"], // References to Reviews collection
-  createdAt: "date",
-  updatedAt: "date",
+  watchlist: [{type:mongoose.Schema.Types.ObjectId , ref:"watchlist"}], // References to Movie collection
+  reviews: [{type:mongoose.Schema.Types.ObjectId , ref:"reviews"}], // References to Reviews collection
+  timestamps: true,
 });
 
 module.exports = mongoose.model("User", userschema);
