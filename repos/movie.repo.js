@@ -1,6 +1,6 @@
-const movie = require("../models/users.model");
+const movie = require("../models/movie.model"); 
 
-const movierepo = {
+const  movierepo = {
 addnewmovie:async (moviedata)=>{
     try {
         return await movie.create(moviedata);
@@ -9,7 +9,5 @@ addnewmovie:async (moviedata)=>{
     }
 
 }
-
-
 };
 module.exports = movierepo; 
