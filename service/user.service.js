@@ -1,0 +1,124 @@
+const bcrypt = require("bcrypt");
+const UserRepository = require("../repos/user.repo");
+const { model, Error } = require("mongoose");
+
+const UserService = {
+  createUser: async (userData) => {
+    /*
+    in register will catch some of attributes 
+    first_name, last_name, email, password,
+    */
+
+    try {
+      // Generate salt
+      const salt = await bcrypt.genSalt(10);
+      // put restriction on mail to input valid mail
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+      if (!emailRegex.test(userData.email)) {
+        throw new Error("Invalid email format");
+      }
+      // Hash the password with the generated salt
+      const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+      // Prepare user data for creation
+      const userPayload = {
+        // firstName: userData.first_name,
+        // lastName: userData.last_name,
+        username: `${userData.first_name} ${userData.last_name}`,
+        profile: {
+          firstName: userData.firstname,
+          lastName: userData.lastname,
+        },
+        email: userData.email,
+        profile: {
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+        },
+        password: hashedPassword,
+        salt,
+        // role: userData.role,
+        cartItems: [], // Use cartItems instead of cartitems
+        role: userData.role || "Customer",
+        cartItems: [],
+        orderIds: [],
+        status: "active",
+      };
+
+      console.log("userPayload:  ", userPayload);
+      // after creating return this user
+      // will set in in db
+      const createdUser = await UserRepository.createUser(userPayload);
+      // const createdUser = await UserRepository.createUser(userPayload);
+      console.log("createdUser:  ", createdUser);
+      // after returning this user will take some data to create claims to return it
+      // set some data to create claims
+      // i will use it in jwt token in cart or checkout
+      const claim = {
+        userid: createdUser._id,
+        username: `${createdUser.firstName} ${createdUser.lastName}`,
+        first_name: createdUser.firstName,
+        last_name: createdUser.lastName,
+        email: createdUser.email,
+        password: hashedPassword,
+        salt,
+        role: createdUser.role,
+      };
+
+      return claim;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new Error("Email already exists");
+      }
+      console.error(error.message);
+      throw new Error("Failed to create user", error.message);
+    }
+  },
+  // getUserById: async (userId) => {
+  //   const user = await UserRepository.findUserById(userId);
+  //   if (!user) throw new Error("User not found");
+  //   return user;
+  // },
+  // this method will return user by email
+  // need to set some of validation cases
+  //
+  getuserbyemail: async (email) => {
+    const user = await UserRepository.findUserByEmail(email);
+    // if user not found will throw error
+    if (!user) throw new Error("User not found");
+    return user;
+  },
+  getallusers: async () => {
+    const allusers = await UserRepository.findallusers();
+    if (!allusers) throw new Error("WTF");
+    return allusers;
+  },
+
+  // user it in login
+  /*
+  in login i get password will pass it in param with pass after get it from user 
+
+  
+  */
+  authenticateUser: async (email, password) => {
+    const user = await UserRepository.findUserByEmail(email);
+    if (!user) throw new Error("Invalid email or password");
+    console.log("Email Passed -----------------------------------");
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new Error("Invalid email or password");
+
+    return user;
+  },
+  updateUser: async (userId, updateData) => {
+    return await UserRepository.updateUser(userId, updateData);
+  },
+  deleteUserById: async (userId) => {
+    const user = await UserRepository.findUserById(userId);
+    if (!user) throw new Error("User not found");
+
+    return await UserRepository.deleteUser(userId);
+  },
+
+
+};
+
+module.exports = UserService;
